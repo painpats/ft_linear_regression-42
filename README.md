@@ -1,2 +1,5 @@
-# ft_linear_regression-42
- Basic Machine Learning Algorithm - 42 Angoulême
+# Linear Regression
+
+![banner](./Assets/ft_linear_regression.png)
+
+
