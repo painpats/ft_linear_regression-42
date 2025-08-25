@@ -28,8 +28,6 @@ def linearRegression(data):
     theta0 = 0.0
     theta1 = 0.0
     
-    print(X_mileage_n.shape)
-
     for i in range(iterations):
         Y = X_mileage_n * theta1 + theta0
         cost = (1 / (2 * m)) * np.sum((Y - y_price_n) ** 2)

@@ -53,7 +53,7 @@ def main():
     parser = argparse.ArgumentParser(description="Predict the price of a car based on its mileage.")
     parser.add_argument('--values_file', '-f', type=str, nargs='?', default=None, help="Path to the values file.")
     args = parser.parse_args()
-    theta0, theta1, min, max = 0, 0, 0, 0
+    theta0, theta1, min, max, price_min, price_max = 0, 0, 0, 0, 0, 0
     if args.values_file:
         try:
             theta0, theta1, min, max, price_min, price_max = load_theta(args.values_file)
