@@ -10,7 +10,7 @@ def linearRegression(data):
     Args:
         data (pd.DataFrame): DataFrame containing 'km' and 'price' columns.
     Returns:
-        tuple: Contains theta0, theta1, min and max values of mileage and price.
+        tuple: Contains theta0, theta1, min and max values of mileage and price, cost_data array.
     '''
     learningRate = 0.5
     iterations = 1000
@@ -27,20 +27,26 @@ def linearRegression(data):
     
     theta0 = 0.0
     theta1 = 0.0
-    
+    cost_data = []
+
     for i in range(iterations):
         Y = X_mileage_n * theta1 + theta0
         cost = (1 / (2 * m)) * np.sum((Y - y_price_n) ** 2)
         print(f"Iteration {i+1}/{iterations}, Cost: {cost}")
+        cost_data.append(cost)
         tmp_theta0 = learningRate * ((1 / m) * np.sum(Y - y_price_n))
         theta0 -= tmp_theta0
         tmp_theta1 = learningRate * ((1 / m) * np.sum((Y - y_price_n) * X_mileage_n))
         theta1 -= tmp_theta1
+        # early stopping condition
+        if i > 0 and abs(cost_data[i] - cost_data[i-1]) < 1e-8:
+            print("Early stopping at iteration", i+1)
+            break
         
     precision = calculate_precision(y_price_n, Y)
     print(f"Precision: {precision:.2f}%")
-    
-    return theta0, theta1, np.min(X_mileage), np.max(X_mileage), np.min(y_price), np.max(y_price)
+    cost_data = np.array(cost_data)
+    return theta0, theta1, np.min(X_mileage), np.max(X_mileage), np.min(y_price), np.max(y_price), cost_data
 
 
 def calculate_precision(y_actual, y_pred):
@@ -80,7 +86,7 @@ def main():
         if 'km' not in data.columns or 'price' not in data.columns:
             raise KeyError("The data file must contain 'km' and 'price' columns.")
         
-        theta0, theta1, X_min, X_max, price_min, price_max = linearRegression(data)
+        theta0, theta1, X_min, X_max, price_min, price_max, cost_data = linearRegression(data)
         
         with open(args.values_file, mode='w') as file:
             file.write("theta0,theta1,min,max,price_min,price_max\n")
@@ -89,16 +95,24 @@ def main():
         print(f"Model trained successfully. Values saved to {args.values_file}.")
         
         normalized_data = (data - data.min()) / (data.max() - data.min())
-        plt.figure(figsize=(10, 6))
-        plt.scatter(normalized_data['km'], normalized_data['price'], color='blue', label='Data Points')
-        plt.plot(normalized_data['km'], normalized_data['km'] * theta1 + theta0, color='red', label='Regression Line')
+        plt.figure(1, figsize=(8, 12))
+        plt.subplot(211)
+        plt.scatter(normalized_data['km'], normalized_data['price'], color='pink', label='Data Points')
+        plt.plot(normalized_data['km'], normalized_data['km'] * theta1 + theta0, color='purple', label='Regression Line')
         plt.xlabel('Mileage (km)')
         plt.ylabel('Price')
-        plt.title('Car Price vs Mileage')
+        plt.title('CAR PRICE PREDICTION')
         plt.legend()
+        plt.savefig('prediction_plot.png')
+        print("Car price prediction plot saved as 'prediction_plot.png'.")
+
+        normalized_cost_data = (cost_data - cost_data.min()) / (cost_data.max() - cost_data.min())
+        plt.subplot(212)
+        plt.plot(normalized_cost_data, color='purple')
+        plt.xlabel('Iteration')
+        plt.ylabel('Normalized Cost') 
+        plt.title('COST OVER ITERATIONS')
         plt.show()
-        plt.savefig('regression_plot.png')
-        print("Regression plot saved as 'regression_plot.png'.")
 
     except Exception as e:
         print(f"Error: {e}")
